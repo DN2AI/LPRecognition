@@ -1,6 +1,6 @@
 # LPRecognition
 - Nhận diện biển số xe dùng thuật toán YOLOv7.
-![demo](doc/demo1.jpg)
+![demo](doc/demo.jpg)
 
 ## How It Works ?
 - Nhận diện biển số xe theo các bước:

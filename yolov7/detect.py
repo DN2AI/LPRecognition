@@ -6,6 +6,7 @@ import cv2
 import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
+import numpy as np
 
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams, LoadImages
@@ -13,7 +14,19 @@ from utils.general import check_img_size, check_requirements, check_imshow, non_
     scale_coords, xyxy2xywh, strip_optimizer, set_logging, increment_path
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
+from sort.sort import Sort
+from ocr import recognize_plate_easyocr
 
+sort_tracker = Sort()
+
+def read_license_plate(img, x1, y1, x2, y2):
+    if (x1 < 0 or y1 < 0 or x2 < 0 or y2 < 0):
+        return ''
+    
+    # crop license plate
+    license_plate_crop = img[int(y1):int(y2), int(x1): int(x2), :]
+
+    return ''.join(recognize_plate_easyocr(license_plate_crop))
 
 def detect(save_img=False):
     source, weights, view_img, save_txt, imgsz, trace = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace
@@ -116,7 +129,23 @@ def detect(save_img=False):
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
+                detections_ = []
+                
+                for x1, y1, x2, y2, conf, detclass in det.cpu().detach().numpy():
+                    detections_.append([x1, y1, x2, y2, conf])
+                
+                track_ids = sort_tracker.update(np.asarray(detections_))
+                
+                # Draw boxes for visualization
+                for track in track_ids:
+                    x1, y1, x2, y2, id = track
+                    if save_img or view_img:  # Add bbox to image
+                        license_plate_text = read_license_plate(im0, x1, y1, x2, y2)
+                        label = f'ID: {int(id)} {license_plate_text}'
+                        im0 = plot_one_box([x1, y1, x2, y2], im0, label=label, line_thickness=4)
+
                 # Write results
+                """
                 for *xyxy, conf, cls in reversed(det):
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
@@ -127,6 +156,11 @@ def detect(save_img=False):
                     if save_img or view_img:  # Add bbox to image
                         label = f'{names[int(cls)]} {conf:.2f}'
                         im0 = plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=1.5)
+                """
+            else:
+                track_ids = sort_tracker.update()
+                # SORT should be updated even with no detections
+
 
             # Print time (inference + NMS)
             print(f'{s}Done. ({(1E3 * (t2 - t1)):.1f}ms) Inference, ({(1E3 * (t3 - t2)):.1f}ms) NMS')

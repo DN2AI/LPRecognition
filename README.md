@@ -10,6 +10,6 @@
 
 ## Todo
 - [X] Nhận diện biển số xe qua hình ảnh
-- [ ] Dùng OCR để nhận diện kí tự.
-- [ ] Nhận diện biển số xe qua video.
+- [X] Dùng OCR để nhận diện kí tự.
+- [X] Nhận diện biển số xe qua video.
 - [ ] Nhận diện biển số xe real-time qua camera.

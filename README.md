@@ -10,7 +10,7 @@
   + Nhận diện kí tự đã được tách (OCR).
 
 ## Note
-- (10/9/2023) Hoàn thành việc dùng model <b>YOLOv7</b> để phát hiện vị trí biển số xe. Đồng thời chỉnh sửa code để hiện background màu xanh.
+- (10/9/2023) Hoàn thành việc dùng model <b>YOLOv7</b> để phát hiện vị trí biển số xe. Đồng thời chỉnh sửa code để hiện background màu xanh. <br/>
 ![demo](doc/demo.jpg)
 
 - (19/9/2023) Dùng thư viện <b>EasyOCR</b> để đọc biển số xe. Tuy nhiên lại không cho ra kết quả chính xác, làm tôi rất thất vọng.<br/>

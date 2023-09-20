@@ -15,18 +15,29 @@ from utils.general import check_img_size, check_requirements, check_imshow, non_
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
 from sort.sort import Sort
-from ocr import recognize_plate_easyocr
+from ocr import recognize_plate_easyocr, recognize_plate_paddleocr
+from utils_LP import crop_n_rotate_LP
 
 sort_tracker = Sort()
 
-def read_license_plate(img, x1, y1, x2, y2):
+IS_ROTATE_LP = True
+OCR_TYPE = "PADDLEOCR"
+
+def read_license_plate(source_img, x1, y1, x2, y2):
     if (x1 < 0 or y1 < 0 or x2 < 0 or y2 < 0):
         return ''
     
-    # crop license plate
-    license_plate_crop = img[int(y1):int(y2), int(x1): int(x2), :]
-
-    return ''.join(recognize_plate_easyocr(license_plate_crop))
+    # Crop and rotate license plate
+    """if IS_ROTATE_LP:
+        angle, rotate_thresh, LP_rotated = crop_n_rotate_LP(source_img, x1, y1, x2, y2)
+    else:
+        LP_rotated = source_img[int(y1):int(y2), int(x1):int(x2), :]
+    """
+    LP_rotated = source_img[int(y1):int(y2), int(x1):int(x2), :]
+    if OCR_TYPE == "EASYOCR":
+        return recognize_plate_easyocr(LP_rotated)
+    elif OCR_TYPE == "PADDLEOCR":
+        return recognize_plate_paddleocr(LP_rotated)
 
 def detect(save_img=False):
     source, weights, view_img, save_txt, imgsz, trace = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace

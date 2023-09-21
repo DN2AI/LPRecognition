@@ -58,10 +58,9 @@ def check_format_number_license_plate(license_plate_text):
     if len(local_number) < 2 or len(seri_number) < 2 or len(license_plate_text) > 9:
       return False
 
-    if local_number.isdigit() and ((not seri_number[0].isdigit() and seri_number[1].isdigit()) or not seri_number.isdigit()):
+    if local_number.isdigit() and ((seri_number[0].isalpha() and seri_number[1].isdigit()) or seri_number.isalpha()):
         if len(ordinal_number) == ordinal_number_limit and ordinal_number.isdigit():
             return True
-
     return False
 
 def assign_number_license_plate(LP_id, license_plate_text, LP_cropped):

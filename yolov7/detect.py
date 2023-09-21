@@ -25,6 +25,11 @@ OCR_TYPE = "PADDLEOCR"
 
 license_plate = {}
 
+def get_image_sharpness(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+    return laplacian_var
+
 def read_license_plate(source_img, x1, y1, x2, y2):
     if (x1 < 0 or y1 < 0 or x2 < 0 or y2 < 0):
         return ''
@@ -35,12 +40,10 @@ def read_license_plate(source_img, x1, y1, x2, y2):
     else:
         LP_rotated = source_img[int(y1):int(y2), int(x1):int(x2), :]
     
-    licesne_plate_text = None
-    
     if OCR_TYPE == "EASYOCR":
         license_plate_text = recognize_plate_easyocr(LP_rotated)
     elif OCR_TYPE == "PADDLEOCR":
-       license_plate_text = recognize_plate_paddleocr(LP_rotated)
+        license_plate_text = recognize_plate_paddleocr(LP_rotated)
 
     return license_plate_text.replace('-', '').replace('.', '')
 
@@ -48,6 +51,9 @@ def check_format_number_license_plate(license_plate_text):
     local_number = license_plate_text[:2]
     seri_number = license_plate_text[2:4]
     ordinal_number = license_plate_text[4:]
+
+    if len(license_plate_text) > 9:
+      return False
 
     if len(seri_number) < 2:
       return False
@@ -58,13 +64,16 @@ def check_format_number_license_plate(license_plate_text):
 
     return False
 
-def assign_number_license_plate(LP_id, license_plate_text):
+def assign_number_license_plate(LP_id, license_plate_text, LP_cropped):
     if LP_id not in license_plate:
-        license_plate[LP_id] = {'text': ''}
-
-    if len(license_plate_text) <= 9:
-        if check_format_number_license_plate(license_plate_text):
-            license_plate[LP_id] = {'text': license_plate_text}
+        license_plate[LP_id] = {'text': '', 'sharpness': 0}
+    
+    if check_format_number_license_plate(license_plate_text):
+        LP_sharpness = get_image_sharpness(LP_cropped)
+        print(license_plate_text, LP_sharpness)
+        if LP_sharpness >= license_plate[LP_id]['sharpness']:
+            license_plate[LP_id]['text'] = license_plate_text
+            license_plate[LP_id]['sharpness'] = LP_sharpness
         
 def detect(save_img=False):
     source, weights, view_img, save_txt, imgsz, trace = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace
@@ -179,7 +188,7 @@ def detect(save_img=False):
                     x1, y1, x2, y2, LP_id = track
                     if save_img or view_img:  # Add bbox to image
                         license_plate_text = read_license_plate(im0, x1, y1, x2, y2)
-                        assign_number_license_plate(LP_id, license_plate_text)
+                        assign_number_license_plate(LP_id, license_plate_text, im0[int(y1):int(y2), int(x1):int(x2), :])
                         label = f'ID: {int(LP_id)} {license_plate[LP_id]["text"]}'
                         im0 = plot_one_box([x1, y1, x2, y2], im0, label=label, line_thickness=4)
 

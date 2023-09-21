@@ -20,25 +20,52 @@ from utils_LP import crop_n_rotate_LP
 
 sort_tracker = Sort()
 
-IS_ROTATE_LP = True
+IS_ROTATE_LP = False
 OCR_TYPE = "PADDLEOCR"
+
+license_plate = {}
 
 def read_license_plate(source_img, x1, y1, x2, y2):
     if (x1 < 0 or y1 < 0 or x2 < 0 or y2 < 0):
         return ''
     
     # Crop and rotate license plate
-    """if IS_ROTATE_LP:
+    if IS_ROTATE_LP:
         angle, rotate_thresh, LP_rotated = crop_n_rotate_LP(source_img, x1, y1, x2, y2)
     else:
         LP_rotated = source_img[int(y1):int(y2), int(x1):int(x2), :]
-    """
-    LP_rotated = source_img[int(y1):int(y2), int(x1):int(x2), :]
+    
+    licesne_plate_text = None
+    
     if OCR_TYPE == "EASYOCR":
-        return recognize_plate_easyocr(LP_rotated)
+        license_plate_text = recognize_plate_easyocr(LP_rotated)
     elif OCR_TYPE == "PADDLEOCR":
-        return recognize_plate_paddleocr(LP_rotated)
+       license_plate_text = recognize_plate_paddleocr(LP_rotated)
 
+    return license_plate_text.replace('-', '').replace('.', '')
+
+def check_format_number_license_plate(license_plate_text):
+    local_number = license_plate_text[:2]
+    seri_number = license_plate_text[2:4]
+    ordinal_number = license_plate_text[4:]
+
+    if len(seri_number) < 2:
+      return False
+
+    if local_number.isdigit() and ((not seri_number[0].isdigit() and seri_number[1].isdigit()) or not seri_number.isdigit()):
+        if len(ordinal_number) <= 5 and ordinal_number.isdigit():
+            return True
+
+    return False
+
+def assign_number_license_plate(LP_id, license_plate_text):
+    if LP_id not in license_plate:
+        license_plate[LP_id] = {'text': ''}
+
+    if len(license_plate_text) <= 9:
+        if check_format_number_license_plate(license_plate_text):
+            license_plate[LP_id] = {'text': license_plate_text}
+        
 def detect(save_img=False):
     source, weights, view_img, save_txt, imgsz, trace = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace
     save_img = True  # save inference images
@@ -149,10 +176,11 @@ def detect(save_img=False):
                 
                 # Draw boxes for visualization
                 for track in track_ids:
-                    x1, y1, x2, y2, id = track
+                    x1, y1, x2, y2, LP_id = track
                     if save_img or view_img:  # Add bbox to image
                         license_plate_text = read_license_plate(im0, x1, y1, x2, y2)
-                        label = f'ID: {int(id)} {license_plate_text}'
+                        assign_number_license_plate(LP_id, license_plate_text)
+                        label = f'ID: {int(LP_id)} {license_plate[LP_id]["text"]}'
                         im0 = plot_one_box([x1, y1, x2, y2], im0, label=label, line_thickness=4)
 
                 # Write results

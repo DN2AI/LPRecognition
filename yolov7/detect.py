@@ -14,11 +14,15 @@ from utils.general import check_img_size, check_requirements, check_imshow, non_
     scale_coords, xyxy2xywh, strip_optimizer, set_logging, increment_path
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
-from sort.sort import Sort
 from ocr import recognize_plate_easyocr, recognize_plate_paddleocr
 from utils_LP import crop_n_rotate_LP
 
-sort_tracker = Sort()
+try:
+    from sort.sort import Sort
+    USE_SORT_TRACKER = True
+    sort_tracker = Sort()
+except:
+    USE_SORT_TRACKER = False
 
 IS_ROTATE_LP = False
 OCR_TYPE = "PADDLEOCR"
@@ -174,36 +178,30 @@ def detect(save_img=False):
                     n = (det[:, -1] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
-                detections_ = []
+                if USE_SORT_TRACKER:
+                    detections_ = []
                 
-                for x1, y1, x2, y2, conf, detclass in det.cpu().detach().numpy():
-                    detections_.append([x1, y1, x2, y2, conf])
-                
-                track_ids = sort_tracker.update(np.asarray(detections_))
-                
-                # Draw boxes for visualization
-                for track in track_ids:
-                    x1, y1, x2, y2, LP_id = track
-                    if save_img or view_img:  # Add bbox to image
-                        license_plate_text = read_license_plate(im0, x1, y1, x2, y2)
-                        assign_number_license_plate(LP_id, license_plate_text, im0[int(y1):int(y2), int(x1):int(x2), :])
-                        label = f'ID: {int(LP_id)} {license_plate[LP_id]["text"]}'
-                        im0 = plot_one_box([x1, y1, x2, y2], im0, label=label, line_thickness=4)
-
-                # Write results
-                """
-                for *xyxy, conf, cls in reversed(det):
-                    if save_txt:  # Write to file
-                        xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                        line = (cls, *xywh, conf) if opt.save_conf else (cls, *xywh)  # label format
-                        with open(txt_path + '.txt', 'a') as f:
-                            f.write(('%g ' * len(line)).rstrip() % line + '\n')
-
-                    if save_img or view_img:  # Add bbox to image
-                        label = f'{names[int(cls)]} {conf:.2f}'
-                        im0 = plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=1.5)
-                """
-            else:
+                    for x1, y1, x2, y2, conf, detclass in det.cpu().detach().numpy():
+                        detections_.append([x1, y1, x2, y2, conf])
+                    
+                    track_ids = sort_tracker.update(np.asarray(detections_))
+                    # Draw boxes for visualization
+                    for track in track_ids:
+                        x1, y1, x2, y2, LP_id = track
+                        if save_img or view_img:  # Add bbox to image
+                            license_plate_text = read_license_plate(im0, x1, y1, x2, y2)
+                            assign_number_license_plate(LP_id, license_plate_text, im0[int(y1):int(y2), int(x1):int(x2), :])
+                            label = f'ID: {int(LP_id)} {license_plate[LP_id]["text"]}'
+                            im0 = plot_one_box([x1, y1, x2, y2], im0, label=label, line_thickness=4)
+                else:
+                    # Write results
+                    for x1, y1, x2, y2, conf, detclass in det.cpu().detach().numpy():
+                        if save_img or view_img:  # Add bbox to image
+                            license_plate_text = read_license_plate(im0, x1, y1, x2, y2)
+                            is_correct_format = check_format_number_license_plate(license_plate_text)
+                            label = license_plate_text if is_correct_format else ''
+                            im0 = plot_one_box([x1, y1, x2, y2], im0, label=label, line_thickness=4)
+            elif USE_SORT_TRACKER:
                 track_ids = sort_tracker.update()
                 # SORT should be updated even with no detections
 

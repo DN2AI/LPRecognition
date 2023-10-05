@@ -1,5 +1,6 @@
 # LPRecognition
-- Đây đơn giản chỉ là một dự án cho cuộc thi <b>Khoa Học Kĩ Thuật</b>.
+- Đây là một repository phụ cho dự án DN2AI (dự án khoa học kĩ thuật).
+- Repository này chủ yếu là một project phụ nhằm phát hiện và đọc biển số xe với độ chính xác cao. Phục vụ cho dự án chính (phát hiện học sinh lái xe lớn hơn 50cc và chưa đủ tuổi).
 - Với các thành viên của nhóm:
     + Võ Phương Nghi 11T1
     + Châu Nguyễn Thanh Duy 11L
@@ -23,16 +24,16 @@
 - (5/10/2023) Đã có thể sử dụng Webcam trên <b>Google Colab</b>, chuẩn bị cho việc thử nghiệm!
 
 ## Tutorial
-### Local
+### 1. Local
 Nếu dùng trên máy bạn thì chạy Project như sau:
 ```
 python3 detect.py --weights <name_weight> --source <source_file> --no-trace
 ```
-Thay thế: name_weight và source_file thành file của các bạn (Có thể xem thêm file detect.py để có nhiều lựa chọn khác).
+Thay thế: ``<name_weight>`` và ``<source_file>`` thành file của các bạn (Có thể xem thêm file ``detect.py`` để có nhiều lựa chọn khác).
 
-Nếu muốn dùng webcam thì thay source_file thành 0
+Nếu muốn dùng webcam thì thay ``<source_file>`` thành ``0``
 
-### Google Colab
+### 2. Google Colab
 Chạy trên Google Colab thì cũng tương tự nhưng thay ``python3`` thành ``!python``
 
 Tuy nhiên, nếu dùng webcam trên <b>Google Colab</b> thì phải chạy file ``webcam_colab.py`` như sau:
@@ -44,7 +45,14 @@ Vui lòng xem file ``tutorial.ipynb`` để hiểu thêm!
 
 ## Todo
 - [X] Nhận diện biển số xe qua hình ảnh
-- [X] Dùng OCR để đọc biển số xe.
+- [X] Đọc biển số xe với độ chính xác cao.
 - [X] Nhận diện biển số xe qua video.
 - [X] Nhận diện biển số xe real-time qua camera.
+
+## Reference
+```
+WongKinYiu, https://github.com/WongKinYiu/yolov7
+mrzaizai2k, https://github.com/mrzaizai2k/License-Plate-Recognition-YOLOv7-and-CNN
+https://github.com/PaddlePaddle/PaddleOCR
+```
 

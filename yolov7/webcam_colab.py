@@ -125,6 +125,7 @@ class ColabWebCam:
                 imgElement = document.createElement('img');
                 imgElement.style.position = 'absolute';
                 imgElement.style.zIndex = 1;
+                imgElement.opacity = 0.5
                 imgElement.onclick = () => { shutdown = true; };
                 div.appendChild(imgElement);
           
@@ -321,7 +322,7 @@ class ColabWebCam:
                       detections_.append([x1, y1, x2, y2, conf])
                     
                     track_ids = sort_tracker.update(np.asarray(detections_))
-		                # Draw boxes for visualization
+		            # Draw boxes for visualization
                     for track in track_ids:
                       x1, y1, x2, y2, LP_id = track
                       license_plate_text = read_license_plate(img0, x1, y1, x2, y2)
@@ -337,8 +338,7 @@ class ColabWebCam:
                         bbox_array = plot_one_box([x1, y1, x2, y2], bbox_array, label=label, line_thickness=4)
       
                 elif USE_SORT_TRACKER:
-		                track_ids = sort_tracker.update()
-		                # SORT should be updated even with no detections
+		                track_ids = sort_tracker.update() # SORT should be updated even with no detections
               
               bbox_array[:, :, 3] = (bbox_array.max(axis = 2) > 0).astype(int) * 255
               bbox_bytes = self.bbox_to_bytes(bbox_array)

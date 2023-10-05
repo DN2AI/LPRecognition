@@ -11,10 +11,10 @@ def recognize_plate_paddleocr(plate, reader=PADDLE_OCR):
     result = reader.ocr(plate, cls=False, det=True)
 
     text = ''
-    
+
     if result[0] is not None:
-      for i in range(len(result[0])):
-        text += result[0][i][1][0]
+        for i in range(len(result[0])):
+            text += result[0][i][1][0]
 
     return text
 
@@ -30,7 +30,7 @@ def recognize_plate_easyocr(plate, reader=EASY_OCR):
 
 def filter_text(region, ocr_result, region_threshold):
     rectangle_area = region.shape[0] * region.shape[1]
-    
+
     plate = []
 
     for result in ocr_result:
@@ -39,6 +39,5 @@ def filter_text(region, ocr_result, region_threshold):
 
         if length * height / rectangle_area > region_threshold:
             plate.append(result[1])
-    
+
     return ''.join(plate)
-    

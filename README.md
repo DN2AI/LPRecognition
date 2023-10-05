@@ -32,7 +32,7 @@ Thay thế: name_weight và source_file thành file của các bạn (Có thể 
 
 Nếu muốn dùng webcam thì thay source_file thành 0
 
-### WebCam Google Colab
+### Google Colab
 Chạy trên Google Colab thì cũng tương tự nhưng thay ``python3`` thành ``!python``
 
 Tuy nhiên, nếu dùng webcam trên <b>Google Colab</b> thì phải chạy file ``webcam_colab.py`` như sau:

@@ -4,13 +4,14 @@ from utils_LP import crop_n_rotate_LP
 
 try:
     from sort.sort import Sort
+
     USE_SORT_TRACKER = True
     sort_tracker = Sort()
 except:
     USE_SORT_TRACKER = False
 
 IS_ROTATE_LP = False
-OCR_TYPE = "PADDLEOCR"
+OCR_TYPE = 'PADDLEOCR'
 
 license_plate = {}
 
@@ -20,21 +21,22 @@ def get_image_sharpness(img):
     return laplacian_var
 
 def read_license_plate(source_img, x1, y1, x2, y2):
-    if (x1 < 0 or y1 < 0 or x2 < 0 or y2 < 0):
+    if x1 < 0 or y1 < 0 or x2 < 0 or y2 < 0:
         return ''
-    
+
     # Crop and rotate license plate
     if IS_ROTATE_LP:
         angle, rotate_thresh, LP_rotated = crop_n_rotate_LP(source_img, x1, y1, x2, y2)
     else:
-        LP_rotated = source_img[int(y1):int(y2), int(x1):int(x2), :]
-      
-    if OCR_TYPE == "EASYOCR":
+        LP_rotated = source_img[int(y1) : int(y2), int(x1) : int(x2), :]
+
+    if OCR_TYPE == 'EASYOCR':
         license_plate_text = recognize_plate_easyocr(LP_rotated)
-    elif OCR_TYPE == "PADDLEOCR":
+    elif OCR_TYPE == 'PADDLEOCR':
         license_plate_text = recognize_plate_paddleocr(LP_rotated)
 
     return license_plate_text
+
 
 def check_format_number_license_plate(license_plate_text):
     ordinal_number_limit = 5 if '.' in license_plate_text else 4
@@ -45,9 +47,11 @@ def check_format_number_license_plate(license_plate_text):
     ordinal_number = license_plate_text[4:]
 
     if len(local_number) < 2 or len(seri_number) < 2 or len(license_plate_text) > 9:
-      return False
+        return False
 
-    if local_number.isdigit() and ((seri_number[0].isalpha() and seri_number[1].isdigit()) or seri_number.isalpha()):
+    if local_number.isdigit() and (
+        (seri_number[0].isalpha() and seri_number[1].isdigit()) or seri_number.isalpha()
+    ):
         if len(ordinal_number) == ordinal_number_limit and ordinal_number.isdigit():
             return True
     return False
@@ -55,10 +59,9 @@ def check_format_number_license_plate(license_plate_text):
 def assign_number_license_plate(LP_id, license_plate_text, LP_cropped):
     if LP_id not in license_plate:
         license_plate[LP_id] = {'text': '', 'sharpness': 0}
-    
+
     if check_format_number_license_plate(license_plate_text):
         LP_sharpness = get_image_sharpness(LP_cropped)
         if LP_sharpness >= license_plate[LP_id]['sharpness']:
             license_plate[LP_id]['text'] = license_plate_text
             license_plate[LP_id]['sharpness'] = LP_sharpness
-

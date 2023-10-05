@@ -358,7 +358,7 @@ class ColabWebCam:
                             for track in track_ids:
                                 x1, y1, x2, y2, LP_id = track
                                 license_plate_text = read_license_plate(img0, x1, y1, x2, y2)
-                                assign_number_license_plate(LP_id,license_plate_text,img0[int(y1) : int(y2), int(x1) : int(x2), :],)
+                                assign_number_license_plate(LP_id,license_plate_text,img0[int(y1) : int(y2), int(x1) : int(x2), :])
                                 label = f'ID: {int(LP_id)} {license_plate[LP_id]["text"]}'
                                 bbox_array = plot_one_box([x1, y1, x2, y2], bbox_array, label=label, line_thickness=4)
                         else:

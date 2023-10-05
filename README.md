@@ -55,4 +55,3 @@ WongKinYiu, https://github.com/WongKinYiu/yolov7
 mrzaizai2k, https://github.com/mrzaizai2k/License-Plate-Recognition-YOLOv7-and-CNN
 https://github.com/PaddlePaddle/PaddleOCR
 ```
-

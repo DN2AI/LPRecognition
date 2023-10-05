@@ -1,32 +1,39 @@
-import easyocr
-from paddleocr import PaddleOCR
 import cv2
 import numpy as np
 
-PADDLE_OCR = PaddleOCR(use_angle_cls=True, use_gpu=True, lang='en', det=False)
-EASY_OCR = easyocr.Reader(['en'], gpu=True)
-OCR_TH = 0.2
+OCR_TYPE = "EASY_OCR"
 
-def recognize_plate_paddleocr(plate, reader=PADDLE_OCR):
-    result = reader.ocr(plate, cls=False, det=True)
+if OCR_TYPE == "PADDLE_OCR":
+    from paddleocr import PaddleOCR
+    PADDLE_OCR = PaddleOCR(use_angle_cls=True, use_gpu=True, lang='en', det=False, show_log=False)
+    reader = PADDLE_OCR
+elif OCR_TYPE == "EASY_OCR":
+    import easyocr
+    EASY_OCR = easyocr.Reader(['en'], gpu=True)
+    OCR_TH = 0.2
+    reader = EASY_OCR
 
-    text = ''
+def read_LP(plate):
+    print(OCR_TYPE)
+    if OCR_TYPE == "PADDLE_OCR":
+        result = reader.ocr(plate, cls=False, det=True)
 
-    if result[0] is not None:
-        for i in range(len(result[0])):
-            text += result[0][i][1][0]
+        text = ''
 
-    return text
+        if result[0] is not None:
+            for i in range(len(result[0])):
+                text += result[0][i][1][0]
 
-def recognize_plate_easyocr(plate, reader=EASY_OCR):
-    ocr_result = reader.readtext(plate)
+        return text
+    elif OCR_TYPE == "EASY_OCR":
+        ocr_result = reader.readtext(plate)
 
-    text = filter_text(plate, ocr_result, OCR_TH)
+        text = filter_text(plate, ocr_result, OCR_TH)
 
-    if len(text) == 1:
-        text = text[0].upper()
+        if len(text) == 1:
+            text = text[0].upper()
 
-    return text
+        return text
 
 def filter_text(region, ocr_result, region_threshold):
     rectangle_area = region.shape[0] * region.shape[1]
@@ -41,3 +48,4 @@ def filter_text(region, ocr_result, region_threshold):
             plate.append(result[1])
 
     return ''.join(plate)
+
